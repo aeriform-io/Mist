@@ -1,42 +1,50 @@
 var Twit = require('twit');
 var Tumblr = require('tumblrwks');
 var fs = require('fs');
-var vapoursPath = "PATH TO IMAGES";
-// var vapoursPath = "/Users/vapour/Dropbox/flame/vapours";
+var vapoursPath = "PATHTOIMAGES";
 
-process.stdout.write('\x1B[2J\x1B[0f'); //CLEAR TERMINAL
+//CLEAR TERMINAL
+process.stdout.write('\x1B[2J\x1B[0f');
 console.log("summoning...")
 
+//SET START TIME FROM CLI
+var myArgs = process.argv.slice(2);
+var hStart = myArgs[0];
+var mStart = myArgs[1];
 
+if (!mStart) { mStart = 0; }
 
+//WAIT UNTIL START TIME
+var now = new Date();
+var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hStart, mStart, 0, 0) - now;
+if (midnight < 0) {
+     midnight += 86400000;
+}
 
-summon();
+setTimeout(function() { timer() }, midnight);
 
-// setInterval(summon, 5000); //FOR TESTING
-setInterval(summon, 60*60*1000*3);
-
-
-
+//REPEAT EVERY 3 HOURS FROM START TIME
+function timer() {
+  summon();
+  setInterval(summon, 60*60*1000*3);
+  // setInterval(summon, 1000); //FOR TESTING
+}
 
 function summon() {
-
 	var vapourImg = pick(fs.readdirSync(vapoursPath));
 
 	twitter(vapourImg);
 	tumblr(vapourImg);
 };
 
-
-
-
+//POST THE IMAGE ON TWITTER
 function twitter(image) {
-
 	var T = new Twit(
 		{
-		consumer_key: '',
-		consumer_secret: '',
-		access_token: '',
-		access_token_secret: ''
+		consumer_key: 'consumer_key',
+		consumer_secret: 'consumer_secret',
+		access_token: 'access_token',
+		access_token_secret: 'access_token_secret'
 		}
 	);
 
@@ -57,24 +65,23 @@ function twitter(image) {
 	  } else {
 		var now=getDateTime()
 		console.log('posted '+now+": " + data.text);
-		// MOVE TO ANOTHER FOLDER AFTER TWEETING
+    // MOVE IMAGE TO ANOTHER FOLDER AS
 		fs.rename(vapoursPath+"/"+image,vapoursPath+"/seen/"+image);
 	  }
 	};
 };
 
 
-
-
+// POST THE IMAGE ON TUMBLR
 function tumblr(image) {
 
 	var tumblr = new Tumblr(
 	{
-		consumerKey: '',
-		consumerSecret: '',
-		accessToken: '',
-		accessSecret: ''
-	}, "YOURBLOG.tumblr.com"
+		consumerKey: 'consumer_key',
+		consumerSecret: 'consumer_secret',
+		accessToken: 'access_token',
+		accessSecret: 'access_token_secret'
+  }, "nameofblog.tumblr.com"
 	);
 
 	var photo = fs.readFileSync(vapoursPath+'/'+image);
@@ -90,8 +97,6 @@ function tumblr(image) {
 }
 
 
-
-
 function getDateTime() {
     var date	= new Date();
 	var hour	= date.getHours(); hour = (hour < 10 ? "0" : "") + hour;
@@ -102,8 +107,6 @@ function getDateTime() {
 	var day		= date.getDate(); day = (day < 10 ? "0" : "") + day;
 	return hour + ":" + min + ":" + sec;
 }
-
-
 
 
 function pick(arr) {
